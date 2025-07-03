@@ -2,6 +2,9 @@ import pandas as pd
 import psycopg2
 import openpyxl
 
+# 1. Create 'students' table in your PosrgreSQL
+# database in python script. It must have id which is PK and auto incremented.
+
 conn = psycopg2.connect(database="new_db",
                         user="postgres",
                         password="gohome25",
@@ -15,7 +18,7 @@ df['phone number'] = df['phone number'].apply(
 )
 
 cur = conn.cursor()
-cur.execute("""
+'''cur.execute("""
     CREATE TABLE students (
         id SERIAL PRIMARY KEY,
         student_name VARCHAR(64),
@@ -34,13 +37,24 @@ for _, row in df.iterrows():
 
 conn.commit()
 
+'''
+
+#2. Collect data from students.xlsx and write it into the text format file (.txt/.csv).
 
 with open("textfile.txt", "w", encoding="utf-8") as f:
     f.write(df.to_string())
 
+
+
+#3. Remove rows where 'average mark' is missing.
+
 cur.execute("DELETE FROM students WHERE average_mark IS NULL")
 conn.commit()
 
+
+
+#4. Separate 'student name' into 'first name' and 'second name'.
+'''
 df[['first_name', 'second_name']] = df['student name'].str.split(' ', n=1, expand=True)
 
 cur.execute("""
@@ -48,8 +62,8 @@ cur.execute("""
     ADD COLUMN first_name VARCHAR(64),
     ADD COLUMN second_name VARCHAR(64);
 """)
-
-for _, row in df.iterrows():
+'''
+'''for _, row in df.iterrows():
     cur.execute("""
         UPDATE students
         SET first_name = %s,
@@ -61,10 +75,43 @@ for _, row in df.iterrows():
         row['student name']
     ))
 
-conn.commit()
+conn.commit()'''
 
 
 
+#5. Database name, table name, file path and other constant variables ought to be stored in separate .json or .yaml file.
+
+import yaml
+
+data = {
+    'db_name': 'new_db',
+    'table name': 'students',
+    'file_path': 'PycharmProjects\PythonProject7\Python_task\students.xlsx',
+    'server_name': 'katet'
+}
+
+with open('data.yaml', 'w', encoding='utf-8') as f:
+    yaml.dump(data, f, allow_unicode=True, default_flow_style=False)
+
+
+
+#6. Insert data into the 'students' table in your DB.
+'''Data was inserted after every step'''
+
+
+
+#7. Count number of male students with 'average mark' > 5
+# and female students with 'average mark' > 5 and select this data from DB.
+# Write this data into DataFrame data type varible and print it.
+
+cur.execute('''SELECT gender, COUNT(*) AS gender_count
+               FROM students
+               WHERE average_mark > 5
+               GROUP BY gender''')
+
+results = cur.fetchall()
+df_gender_count = pd.DataFrame(results, columns=['gender', 'gender_count'])
+print(df_gender_count)
 
 
 
