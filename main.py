@@ -18,7 +18,7 @@ df['phone number'] = df['phone number'].apply(
 )
 
 cur = conn.cursor()
-'''cur.execute("""
+cur.execute("""
     CREATE TABLE students (
         id SERIAL PRIMARY KEY,
         student_name VARCHAR(64),
